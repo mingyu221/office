@@ -39,6 +39,29 @@ python3 freeze.py o2_tunnel_final.usda
 실제로 09 와 11 을 따로 돌리던 중 그렇게 돼서, centered 파일이 6프레임 2fps 로
 나왔다. 13 이 09+11 을 합친 이유다.
 
+### 윈도우 / 갤럭시에서 보려면 GLB 가 필요하다
+
+USDZ 는 애플 포맷이라 윈도우와 안드로이드가 기본 지원하지 않는다. 두 플랫폼의
+표준은 glTF/GLB 다 (안드로이드 Scene Viewer, 윈도우 '3D 보기').
+
+glTF 에는 `visibility` token 이 없다. 대신 애니메이션 샘플러에
+`interpolation = "STEP"` 이 있고, STEP 은 다음 키프레임까지 값을 그대로 유지하므로
+보간이 전혀 일어나지 않는다. USDZ 의 visibility 와 같은 효과다. 그래서 GLB 는
+scale 애니메이션을 그대로 두고 STEP 으로 내보내면 된다.
+
+`14_export_glb.py` 를 13 다음에 돌린다. 내보낸 GLB 의 JSON 청크를 직접 파싱해
+보간이 정말 STEP 인지, translation 이 애니메이션되지 않는지 측정한다.
+
+| 플랫폼 | 방법 |
+|---|---|
+| 윈도우 | Microsoft Store 의 '3D 보기'(3D Viewer) 앱, 또는 블렌더 Import glTF |
+| 갤럭시 | 웹 페이지 `<model-viewer>` (Scene Viewer AR 은 https 주소 필요) |
+| 둘 다 | https://gltf-viewer.donmccurdy.com 드래그&드롭 |
+| 아이폰 | USDZ 그대로 (AR Quick Look) |
+
+`export_force_sampling=False` 가 중요하다. True 면 익스포터가 매 프레임을
+샘플링하며 LINEAR 로 내보낸다.
+
 ### 텍스처
 
 카메라/라이트를 제외하면서 `./textures/color_0C0C0C.exr` 참조가 사라졌다
