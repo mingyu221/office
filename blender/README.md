@@ -49,8 +49,30 @@ glTF 에는 `visibility` token 이 없다. 대신 애니메이션 샘플러에
 보간이 전혀 일어나지 않는다. USDZ 의 visibility 와 같은 효과다. 그래서 GLB 는
 scale 애니메이션을 그대로 두고 STEP 으로 내보내면 된다.
 
-`14_export_glb.py` 를 13 다음에 돌린다. 내보낸 GLB 의 JSON 청크를 직접 파싱해
-보간이 정말 STEP 인지, translation 이 애니메이션되지 않는지 측정한다.
+`14_export_glb.py` 로 내보낸 뒤 **반드시 `15_fix_glb.py` 를 돌려야 한다.**
+블렌더 glTF 익스포터가 두 가지 문제를 만들기 때문이다 (실측 확인).
+
+1. `export_force_sampling=False` 를 줘도 **매 프레임 샘플링하며 LINEAR 로 쓴다**
+   (240키, LINEAR). 보간 구간이 1/24초라 짧지만 0 은 아니다.
+2. **오브젝트마다 애니메이션을 따로 만든다** (animation 5개, 각 1채널).
+   model-viewer / three.js / Scene Viewer 는 한 번에 애니메이션 하나만 재생하므로
+   **첫 오브젝트만 움직이고 나머지 4개는 scale 1 에 멈춘 채 계속 보인다.**
+
+브라우저 실측 (5초 시점, 밝은 픽셀 수):
+
+| | 결과 |
+|---|---|
+| 고치기 전 | 큐브 4개 동시 노출 (~12,000px) |
+| 고친 후 | 큐브 1개 (~3,400px) |
+
+`15_fix_glb.py` 는 GLB 의 JSON 청크만 고친다. 애니메이션을 하나로 병합하고
+scale 채널의 보간을 STEP 으로 바꾼다. BIN 청크는 건드리지 않는다
+(bufferView offset 은 BIN 내부 기준이라 JSON 길이가 변해도 안전하다).
+
+```bash
+python3 15_fix_glb.py o2_tunnel_final.glb
+# -> o2_tunnel_final_fixed.glb
+```
 
 | 플랫폼 | 방법 |
 |---|---|
