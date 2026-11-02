@@ -9,18 +9,59 @@
 | 안드로이드 (갤럭시) | 3D 뷰 + **AR 로 보기** → Scene Viewer |
 | 아이폰 / 아이패드 | 3D 뷰 + **AR 로 보기** → AR Quick Look (`ios-src` 의 USDZ 사용) |
 
-## 필요한 파일
+## 폴더 하나 = 모델 하나 = 주소 하나
 
-`index.html` 과 **같은 폴더**에 두 파일을 둔다.
+`?model=...` 로 파일을 지정하지 않는다. **폴더 이름이 곧 주소**다.
 
 ```
-index.html
-o2_tunnel_final.glb            # 14_export_glb.py 결과 (안드로이드/윈도우)
-o2_tunnel_final_frozen.usdz    # 10_freeze_to_visibility.py 결과 (아이폰 AR)
+docs/
+  index.html          <- gallery.html 사본 (모델 목록)
+  models.json         <- 목록 데이터
+  o2-tunnel/
+    index.html        <- viewer/index.html 사본 (고칠 것 없음)
+    model.glb
+    model.usdz
+  다른모델/
+    index.html
+    model.glb
 ```
 
-이름이 다르면 `index.html` 상단의 `DEFAULT_GLB` / `DEFAULT_USDZ` 를 고치거나,
-주소에 붙여서 덮어쓴다: `index.html?model=다른이름.glb&usdz=다른이름.usdz`
+주소:
+
+```
+https://mingyu221.github.io/office_claude/            <- 목록
+https://mingyu221.github.io/office_claude/o2-tunnel/  <- 모델
+```
+
+뷰어는 **자기 폴더의 `model.glb` / `model.usdz`** 를 읽는다. 그래서 폴더째
+복사하면 아무것도 안 고쳐도 동작하고, 제목은 폴더 이름에서 자동으로 만든다.
+
+### 모델 추가
+
+```bash
+./viewer/add-model.sh <폴더이름> <모델.glb> [모델.usdz] ["설명"]
+```
+
+예:
+
+```bash
+./viewer/add-model.sh o2-tunnel ~/Desktop/a.glb ~/Desktop/a.usdz "산소 궤적 10초"
+git add docs && git commit -m "add model: o2-tunnel" && git push
+```
+
+폴더 생성, 파일 복사, `models.json` 갱신, 목록 페이지 배치까지 한다.
+같은 이름으로 다시 돌리면 덮어쓴다.
+
+### 그래도 파일을 직접 지정하고 싶으면
+
+```
+?model=다른.glb&usdz=다른.usdz     폴더 안의 다른 파일
+?model=https://raw.githubusercontent.com/<사용자>/<저장소>/<브랜치>/<경로>.glb
+?title=제목&note=설명              제목 덮어쓰기
+```
+
+`raw.githubusercontent.com` 은 `access-control-allow-origin: *` 를 보내므로
+저장소 어디에 있는 파일이든 불러올 수 있다 (구글 드라이브는 이 헤더가 없어서 안 된다).
 
 ## 윈도우/맥에서 바로 보기 (로컬)
 
