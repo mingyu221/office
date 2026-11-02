@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>O2 Tunnel</title>
+<meta name="description" content="단백질 터널을 통과하는 산소 분자 궤적 — 윈도우·안드로이드·아이폰에서 보고 AR 로 띄울 수 있는 3D 뷰어">
+<script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --ink: #16181d;
+    --muted: #5b6270;
+    --line: #dfe3e9;
+    --accent: #2f6df6;
+    --stage: #eceff4;
+    --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1115;
+      --panel: #171a20;
+      --ink: #e8eaee;
+      --muted: #9aa2b1;
+      --line: #272b33;
+      --accent: #5b8cff;
+      --stage: #11131a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1115;
+    --panel: #171a20;
+    --ink: #e8eaee;
+    --muted: #9aa2b1;
+    --line: #272b33;
+    --accent: #5b8cff;
+    --stage: #11131a;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  h1 { font-size: 17px; margin: 0; font-weight: 650; letter-spacing: -0.01em; }
+  header .sub { color: var(--muted); font-size: 13px; }
+
+  main { flex: 1; min-height: 0; padding: 16px; display: flex; }
+  .stage {
+    flex: 1;
+    min-height: 320px;
+    position: relative;
+    background: var(--stage);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  model-viewer { width: 100%; height: 100%; --poster-color: transparent; }
+
+  #msg {
+    position: absolute; inset: 0;
+    display: none;
+    place-content: center;
+    text-align: center;
+    padding: 24px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  #msg.show { display: grid; }
+  #msg code {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-size: 13px;
+  }
+
+  .ar-btn {
+    position: absolute; right: 12px; bottom: 12px;
+    background: var(--accent); color: #fff;
+    border: 0; border-radius: 999px;
+    padding: 10px 18px;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,.18);
+  }
+  model-viewer:not([ar-status="not-presenting"]) .ar-btn { display: none; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    background: var(--panel);
+    padding: 10px 16px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  button.ctl {
+    background: var(--panel); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 8px;
+    padding: 7px 14px; font-size: 14px; cursor: pointer;
+    min-width: 72px;
+  }
+  button.ctl:hover { border-color: var(--accent); color: var(--accent); }
+  input[type=range] {
+    flex: 1; min-width: 160px; accent-color: var(--accent);
+  }
+  .time {
+    font-variant-numeric: tabular-nums;
+    color: var(--muted); font-size: 13px; min-width: 104px; text-align: right;
+  }
+
+  @media (max-width: 560px) {
+    main { padding: 10px; }
+    footer { padding: 10px 12px 14px; }
+    .time { min-width: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>O2 Tunnel</h1>
+  <span class="sub">단백질 터널 산소 궤적 · 10초 · 5구간</span>
+</header>
+
+<main>
+  <div class="stage">
+    <model-viewer
+      id="mv"
+      camera-controls
+      touch-action="pan-y"
+      autoplay
+      shadow-intensity="0.6"
+      environment-image="neutral"
+      exposure="1.0"
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+      ar-scale="auto"
+      alt="단백질 터널을 통과하는 산소 분자 궤적">
+      <button slot="ar-button" class="ar-btn">AR 로 보기</button>
+    </model-viewer>
+    <div id="msg"></div>
+  </div>
+</main>
+
+<footer>
+  <button class="ctl" id="toggle">일시정지</button>
+  <input type="range" id="seek" min="0" max="1000" value="0" step="1"
+         aria-label="재생 위치">
+  <span class="time" id="time">0.00 / 0.00 초</span>
+  <button class="ctl" id="reset">시점 초기화</button>
+</footer>
+
+<script type="module">
+  // 파일 이름을 바꿨으면 여기만 고치면 된다. ?model=... 로 덮어쓸 수도 있다.
+  const DEFAULT_GLB  = 'o2_tunnel_final.glb';
+  const DEFAULT_USDZ = 'o2_tunnel_final_frozen.usdz';
+
+  const params = new URLSearchParams(location.search);
+  const mv   = document.getElementById('mv');
+  const msg  = document.getElementById('msg');
+  const seek = document.getElementById('seek');
+  const time = document.getElementById('time');
+  const toggle = document.getElementById('toggle');
+
+  // ★ 프로퍼티(mv.src = ...) 로 설정하면 안 된다.
+  //   model-viewer 스크립트가 CDN 에서 늦게 도착해 커스텀 엘리먼트가 아직
+  //   업그레이드되지 않았으면, 그 할당이 엘리먼트의 접근자를 가려버려서
+  //   model-viewer 가 영원히 src 를 못 본다. 속성은 타이밍과 무관하다.
+  mv.setAttribute('src', params.get('model') || DEFAULT_GLB);
+  mv.setAttribute('ios-src', params.get('usdz') || DEFAULT_USDZ);
+
+  const fmt = t => (Number.isFinite(t) ? t.toFixed(2) : '0.00');
+  function paint() {
+    const d = mv.duration || 0;
+    const t = mv.currentTime || 0;
+    time.textContent = `${fmt(t)} / ${fmt(d)} 초`;
+    if (d > 0 && !seek.matches(':active')) {
+      seek.value = String(Math.round((t / d) * 1000));
+    }
+  }
+
+  let raf = 0;
+  const loop = () => { paint(); raf = requestAnimationFrame(loop); };
+
+  mv.addEventListener('load', () => {
+    msg.classList.remove('show');
+    paint();
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(loop);
+    if (!mv.availableAnimations.length) {
+      toggle.disabled = seek.disabled = true;
+      toggle.textContent = '애니메이션 없음';
+    }
+  });
+
+  mv.addEventListener('error', () => {
+    cancelAnimationFrame(raf);
+    msg.innerHTML =
+      `<div><strong>모델을 불러오지 못했습니다.</strong><br><br>` +
+      `<code>${mv.getAttribute('src')}</code> 파일이 이 페이지와 같은 폴더에 있어야 합니다.<br><br>` +
+      `파일을 직접 열면(<code>file://</code>) 브라우저가 차단합니다. ` +
+      `같은 폴더에서 <code>python3 -m http.server 8000</code> 을 실행하고 ` +
+      `<code>http://localhost:8000</code> 으로 여세요.</div>`;
+    msg.classList.add('show');
+  });
+
+  toggle.addEventListener('click', () => {
+    if (mv.paused) { mv.play(); toggle.textContent = '일시정지'; }
+    else { mv.pause(); toggle.textContent = '재생'; }
+  });
+
+  seek.addEventListener('input', () => {
+    const d = mv.duration || 0;
+    if (d > 0) {
+      mv.currentTime = (Number(seek.value) / 1000) * d;
+      if (!mv.paused) { mv.pause(); toggle.textContent = '재생'; }
+      paint();
+    }
+  });
+
+  document.getElementById('reset').addEventListener('click', () => {
+    mv.resetTurntableRotation();
+    mv.cameraOrbit = 'auto auto auto';
+    mv.cameraTarget = 'auto auto auto';
+    mv.fieldOfView = 'auto';
+  });
+</script>
+
+</body>
+</html>
