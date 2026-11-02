@@ -27,6 +27,9 @@
          "Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
   }
   .wrap { max-width:720px; margin:0 auto; padding:28px 16px 48px; }
+  a.home { display:inline-block; color:var(--muted); text-decoration:none;
+           font-size:13px; margin-bottom:10px; }
+  a.home:hover { color:var(--accent); }
   h1 { font-size:20px; margin:0 0 4px; font-weight:650; letter-spacing:-0.01em; }
   .lead { color:var(--muted); font-size:14px; margin:0 0 24px; }
   ul { list-style:none; margin:0; padding:0; display:grid; gap:10px; }
@@ -50,7 +53,8 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>3D Models</h1>
+  <a class="home" id="up" href="../" hidden>&larr; 상위</a>
+  <h1 id="h">3D Models</h1>
   <p class="lead">항목을 누르면 뷰어가 열립니다. 휴대폰에서는 AR 로 볼 수 있습니다.</p>
   <ul id="list"></ul>
   <div class="msg" id="msg" hidden></div>
@@ -61,11 +65,24 @@
   const list = document.getElementById('list');
   const msg = document.getElementById('msg');
 
+
+
   try {
     const res = await fetch('models.json', { cache: 'no-cache' });
     if (!res.ok) throw new Error(`models.json ${res.status}`);
-    const items = await res.json();
-    if (!Array.isArray(items) || !items.length) throw new Error('비어 있음');
+    const data = await res.json();
+
+    // models.json 은 {title, root, items[]} 또는 예전 형식인 배열.
+    // URL 로 깊이를 추측하지 않는다 - GitHub Pages 의 /<저장소>/ 접두사, 로컬
+    // 서버, user 사이트에서 각각 깊이가 달라 틀리기 때문이다.
+    const items = Array.isArray(data) ? data : (data.items || []);
+    const isRoot = Array.isArray(data) ? true : data.root === true;
+    const heading = (Array.isArray(data) ? '' : data.title) || '3D Models';
+    document.getElementById('h').textContent = heading;
+    document.title = heading;
+    document.getElementById('up').hidden = isRoot;
+
+    if (!items.length) throw new Error('비어 있음');
 
     for (const it of items) {
       const path = String(it.path || '').replace(/^\/+|\/+$/g, '');
@@ -85,7 +102,7 @@
       }
       const p = document.createElement('div');
       p.className = 'p';
-      p.textContent = `/${path}/`;
+      p.textContent = `${path}/`;
       a.appendChild(p);
       list.appendChild(a);
     }

@@ -9,28 +9,40 @@
 | 안드로이드 (갤럭시) | 3D 뷰 + **AR 로 보기** → Scene Viewer |
 | 아이폰 / 아이패드 | 3D 뷰 + **AR 로 보기** → AR Quick Look (`ios-src` 의 USDZ 사용) |
 
-## 폴더 하나 = 모델 하나 = 주소 하나
+## 폴더 구조가 곧 주소
 
 `?model=...` 로 파일을 지정하지 않는다. **폴더 이름이 곧 주소**다.
 
+단계 수에 제한이 없다. 거쳐 가는 모든 폴더에 목록 페이지가 생긴다.
+
 ```
 docs/
-  index.html          <- gallery.html 사본 (모델 목록)
-  models.json         <- 목록 데이터
-  o2-tunnel/
-    index.html        <- viewer/index.html 사본 (고칠 것 없음)
-    model.glb
-    model.usdz
-  다른모델/
-    index.html
-    model.glb
+  index.html                      <- 목록 (video, paper 가 보임)
+  models.json
+  video/
+    index.html                    <- 목록 (codh-tunnel, o2-tunnel 이 보임)
+    models.json
+    codh-tunnel/
+      index.html                  <- 뷰어 (고칠 것 없음)
+      model.glb
+      model.usdz
+    o2-tunnel/
+      index.html
+      model.glb
+  paper/
+    fig3/
+      mechanism/
+        index.html
+        model.glb
 ```
 
 주소:
 
 ```
-https://mingyu221.github.io/office_claude/            <- 목록
-https://mingyu221.github.io/office_claude/o2-tunnel/  <- 모델
+https://mingyu221.github.io/office_claude/                      목록
+https://mingyu221.github.io/office_claude/video/               video 목록
+https://mingyu221.github.io/office_claude/video/codh-tunnel/   모델
+https://mingyu221.github.io/office_claude/paper/fig3/mechanism/
 ```
 
 뷰어는 **자기 폴더의 `model.glb` / `model.usdz`** 를 읽는다. 그래서 폴더째
@@ -39,18 +51,32 @@ https://mingyu221.github.io/office_claude/o2-tunnel/  <- 모델
 ### 모델 추가
 
 ```bash
-./viewer/add-model.sh <폴더이름> <모델.glb> [모델.usdz] ["설명"]
+./viewer/add-model.sh <경로> <모델.glb> [모델.usdz] ["설명"]
 ```
 
 예:
 
 ```bash
-./viewer/add-model.sh o2-tunnel ~/Desktop/a.glb ~/Desktop/a.usdz "산소 궤적 10초"
-git add docs && git commit -m "add model: o2-tunnel" && git push
+./viewer/add-model.sh video/codh-tunnel ~/Desktop/a.glb ~/Desktop/a.usdz "CODH 터널 10초"
+git add docs && git commit -m "add model: video/codh-tunnel" && git push
 ```
 
-폴더 생성, 파일 복사, `models.json` 갱신, 목록 페이지 배치까지 한다.
-같은 이름으로 다시 돌리면 덮어쓴다.
+폴더 생성, 파일 복사, 거쳐 가는 모든 단계의 `models.json` 갱신, 목록 페이지
+배치까지 한다. 같은 경로로 다시 돌리면 덮어쓰고, 제목/설명은 유지한다.
+
+폴더 이름에는 영문·숫자·한글·하이픈·언더스코어만 쓴다 (공백 금지).
+
+### 목록 제목 바꾸기
+
+`docs/<경로>/models.json` 의 `title` 을 고치면 된다.
+
+```json
+{ "root": false, "title": "동영상", "items": [ { "path": "codh-tunnel", "title": "CODH 터널" } ] }
+```
+
+목록 페이지는 **URL 깊이를 추측하지 않고** 이 파일의 `title` / `root` 를 읽는다.
+GitHub Pages 의 `/<저장소>/` 접두사, 로컬 서버, user 사이트에서 깊이가 제각각
+달라지기 때문이다.
 
 ### 그래도 파일을 직접 지정하고 싶으면
 
