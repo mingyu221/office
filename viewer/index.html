@@ -59,6 +59,11 @@
     flex-wrap: wrap;
   }
   h1 { font-size: 17px; margin: 0; font-weight: 650; letter-spacing: -0.01em; }
+  a.home {
+    color: var(--muted); text-decoration: none; font-size: 18px;
+    line-height: 1; padding: 2px 6px; border-radius: 6px;
+  }
+  a.home:hover { color: var(--accent); background: var(--panel); }
   header .sub { color: var(--muted); font-size: 13px; }
 
   main { flex: 1; min-height: 0; padding: 16px; display: flex; }
@@ -136,8 +141,9 @@
 <body>
 
 <header>
-  <h1>O2 Tunnel</h1>
-  <span class="sub">단백질 터널 산소 궤적 · 10초 · 5구간</span>
+  <a class="home" href="../" title="목록으로">&larr;</a>
+  <h1 id="title">3D</h1>
+  <span class="sub" id="subtitle"></span>
 </header>
 
 <main>
@@ -169,9 +175,13 @@
 </footer>
 
 <script type="module">
-  // 파일 이름을 바꿨으면 여기만 고치면 된다. ?model=... 로 덮어쓸 수도 있다.
-  const DEFAULT_GLB  = 'o2_tunnel_final.glb';
-  const DEFAULT_USDZ = 'o2_tunnel_final_frozen.usdz';
+  // 이 페이지는 '자기 폴더'의 model.glb / model.usdz 를 읽는다.
+  // 폴더째 복사하면 그대로 동작하고, 주소는 폴더 이름이 된다.
+  //   docs/o2-tunnel/{index.html, model.glb, model.usdz}
+  //   -> https://<사용자>.github.io/<저장소>/o2-tunnel/
+  // ?model= / ?usdz= 로 덮어쓸 수도 있다 (다른 폴더나 raw 주소도 가능).
+  const DEFAULT_GLB  = 'model.glb';
+  const DEFAULT_USDZ = 'model.usdz';
 
   const params = new URLSearchParams(location.search);
   const mv   = document.getElementById('mv');
@@ -186,6 +196,18 @@
   //   model-viewer 가 영원히 src 를 못 본다. 속성은 타이밍과 무관하다.
   mv.setAttribute('src', params.get('model') || DEFAULT_GLB);
   mv.setAttribute('ios-src', params.get('usdz') || DEFAULT_USDZ);
+
+  // 제목은 폴더 이름에서 자동으로 만든다. ?title= 로 덮어쓸 수 있다.
+  const seg = location.pathname.replace(/\/+$/, '').split('/').pop() || '';
+  const pretty = decodeURIComponent(seg)
+    .replace(/[-_]+/g, ' ')
+    .replace(/\.html?$/i, '')
+    .trim();
+  const heading = params.get('title') || pretty || '3D';
+  document.getElementById('title').textContent = heading;
+  document.title = heading;
+  const sub = params.get('note');
+  if (sub) document.getElementById('subtitle').textContent = sub;
 
   const fmt = t => (Number.isFinite(t) ? t.toFixed(2) : '0.00');
   function paint() {

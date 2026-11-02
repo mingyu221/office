@@ -9,18 +9,85 @@
 | 안드로이드 (갤럭시) | 3D 뷰 + **AR 로 보기** → Scene Viewer |
 | 아이폰 / 아이패드 | 3D 뷰 + **AR 로 보기** → AR Quick Look (`ios-src` 의 USDZ 사용) |
 
-## 필요한 파일
+## 폴더 구조가 곧 주소
 
-`index.html` 과 **같은 폴더**에 두 파일을 둔다.
+`?model=...` 로 파일을 지정하지 않는다. **폴더 이름이 곧 주소**다.
+
+단계 수에 제한이 없다. 거쳐 가는 모든 폴더에 목록 페이지가 생긴다.
 
 ```
-index.html
-o2_tunnel_final.glb            # 14_export_glb.py 결과 (안드로이드/윈도우)
-o2_tunnel_final_frozen.usdz    # 10_freeze_to_visibility.py 결과 (아이폰 AR)
+docs/
+  index.html                      <- 목록 (video, paper 가 보임)
+  models.json
+  video/
+    index.html                    <- 목록 (codh-tunnel, o2-tunnel 이 보임)
+    models.json
+    codh-tunnel/
+      index.html                  <- 뷰어 (고칠 것 없음)
+      model.glb
+      model.usdz
+    o2-tunnel/
+      index.html
+      model.glb
+  paper/
+    fig3/
+      mechanism/
+        index.html
+        model.glb
 ```
 
-이름이 다르면 `index.html` 상단의 `DEFAULT_GLB` / `DEFAULT_USDZ` 를 고치거나,
-주소에 붙여서 덮어쓴다: `index.html?model=다른이름.glb&usdz=다른이름.usdz`
+주소:
+
+```
+https://mingyu221.github.io/office_claude/                      목록
+https://mingyu221.github.io/office_claude/video/               video 목록
+https://mingyu221.github.io/office_claude/video/codh-tunnel/   모델
+https://mingyu221.github.io/office_claude/paper/fig3/mechanism/
+```
+
+뷰어는 **자기 폴더의 `model.glb` / `model.usdz`** 를 읽는다. 그래서 폴더째
+복사하면 아무것도 안 고쳐도 동작하고, 제목은 폴더 이름에서 자동으로 만든다.
+
+### 모델 추가
+
+```bash
+./viewer/add-model.sh <경로> <모델.glb> [모델.usdz] ["설명"]
+```
+
+예:
+
+```bash
+./viewer/add-model.sh video/codh-tunnel ~/Desktop/a.glb ~/Desktop/a.usdz "CODH 터널 10초"
+git add docs && git commit -m "add model: video/codh-tunnel" && git push
+```
+
+폴더 생성, 파일 복사, 거쳐 가는 모든 단계의 `models.json` 갱신, 목록 페이지
+배치까지 한다. 같은 경로로 다시 돌리면 덮어쓰고, 제목/설명은 유지한다.
+
+폴더 이름에는 영문·숫자·한글·하이픈·언더스코어만 쓴다 (공백 금지).
+
+### 목록 제목 바꾸기
+
+`docs/<경로>/models.json` 의 `title` 을 고치면 된다.
+
+```json
+{ "root": false, "title": "동영상", "items": [ { "path": "codh-tunnel", "title": "CODH 터널" } ] }
+```
+
+목록 페이지는 **URL 깊이를 추측하지 않고** 이 파일의 `title` / `root` 를 읽는다.
+GitHub Pages 의 `/<저장소>/` 접두사, 로컬 서버, user 사이트에서 깊이가 제각각
+달라지기 때문이다.
+
+### 그래도 파일을 직접 지정하고 싶으면
+
+```
+?model=다른.glb&usdz=다른.usdz     폴더 안의 다른 파일
+?model=https://raw.githubusercontent.com/<사용자>/<저장소>/<브랜치>/<경로>.glb
+?title=제목&note=설명              제목 덮어쓰기
+```
+
+`raw.githubusercontent.com` 은 `access-control-allow-origin: *` 를 보내므로
+저장소 어디에 있는 파일이든 불러올 수 있다 (구글 드라이브는 이 헤더가 없어서 안 된다).
 
 ## 윈도우/맥에서 바로 보기 (로컬)
 
