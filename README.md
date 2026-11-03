@@ -25,8 +25,9 @@ USDZ(아이폰) 와 GLB(윈도우·안드로이드) 로 내보내고, GitHub Pag
 
 명령 한 줄이면 된다. 폴더 생성, 파일 복사, 목록 갱신까지 한다.
 
+저장소 폴더에서 실행한다.
+
 ```bash
-cd ~/Desktop/vision/office
 ./viewer/add-model.sh <경로> <모델.glb> [모델.usdz] ["설명"]
 git add docs && git commit -m "add model: <경로>" && git push
 ```
