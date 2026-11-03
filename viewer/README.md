@@ -39,10 +39,10 @@ docs/
 주소:
 
 ```
-https://mingyu221.github.io/office_claude/                      목록
-https://mingyu221.github.io/office_claude/video/               video 목록
-https://mingyu221.github.io/office_claude/video/codh-tunnel/   모델
-https://mingyu221.github.io/office_claude/paper/fig3/mechanism/
+https://mingyu221.github.io/office/                      목록
+https://mingyu221.github.io/office/video/               video 목록
+https://mingyu221.github.io/office/video/codh-tunnel/   모델
+https://mingyu221.github.io/office/paper/fig3/mechanism/
 ```
 
 뷰어는 **자기 폴더의 `model.glb` / `model.usdz`** 를 읽는다. 그래서 폴더째

@@ -7,7 +7,7 @@
 
 | | |
 |---|---|
-| 공개 주소 | https://mingyu221.github.io/office_claude/video/codh-tunnel/ |
+| 공개 주소 | https://mingyu221.github.io/office/video/codh-tunnel/ |
 | 아이폰 | `model.usdz` (21.8MB) — AR Quick Look |
 | 윈도우·갤럭시 | `model.glb` (20.5MB) — Scene Viewer / 웹뷰어 |
 | 애니메이션 | 240프레임 @ 24fps = 9.96초, 5구간 × 2초 |

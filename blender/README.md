@@ -238,7 +238,7 @@ macOS/Linux 는 터미널에서 블렌더를 직접 실행해야 한다
 파일을 로컬에 받아두면 Text Editor 의 `Text ▸ Open` 으로 바로 열 수 있다.
 
 ```bash
-git clone https://github.com/mingyu221/office_claude
+git clone https://github.com/mingyu221/office
 # 또는 이미 있으면
 git pull
 ```
