@@ -1,16 +1,19 @@
-# office_claude
+# office
 
-단백질 터널을 통과하는 산소(O2) 분자 궤적을 3D/AR 로 보여주는 저장소.
-블렌더에서 만든 모델을 USDZ(아이폰) 와 GLB(윈도우·안드로이드) 로 내보내고,
-GitHub Pages 에 올려 링크 하나로 공유한다.
+3D 모델을 웹과 AR 로 공유하는 저장소. 블렌더에서 만든 모델을
+USDZ(아이폰) 와 GLB(윈도우·안드로이드) 로 내보내고, GitHub Pages 에 올려
+링크 하나로 공유한다. 설치할 것이 없고 휴대폰에서는 AR 로 볼 수 있다.
+
+현재 올라와 있는 것은 단백질 터널을 통과하는 산소(O2) 분자 궤적
+애니메이션이며, 분류 폴더를 나눠 다른 모델도 같이 둘 수 있다.
 
 ## 보기
 
 | 주소 | 내용 |
 |---|---|
-| **https://mingyu221.github.io/office_claude/** | 전체 목록 |
-| https://mingyu221.github.io/office_claude/video/ | `video` 분류 목록 |
-| https://mingyu221.github.io/office_claude/video/codh-tunnel/ | CODH 터널 모델 |
+| **https://mingyu221.github.io/office/** | 전체 목록 |
+| https://mingyu221.github.io/office/video/ | `video` 분류 목록 |
+| https://mingyu221.github.io/office/video/codh-tunnel/ | CODH 터널 모델 |
 
 | 기기 | 동작 |
 |---|---|
@@ -22,8 +25,9 @@ GitHub Pages 에 올려 링크 하나로 공유한다.
 
 명령 한 줄이면 된다. 폴더 생성, 파일 복사, 목록 갱신까지 한다.
 
+저장소 폴더에서 실행한다.
+
 ```bash
-cd ~/Desktop/vision/office_claude
 ./viewer/add-model.sh <경로> <모델.glb> [모델.usdz] ["설명"]
 git add docs && git commit -m "add model: <경로>" && git push
 ```
@@ -38,7 +42,7 @@ git add docs && git commit -m "add model: <경로>" && git push
 git add docs && git commit -m "add model: video/codh-tunnel" && git push
 ```
 
-푸시하고 1~2분 뒤 `https://mingyu221.github.io/office_claude/video/codh-tunnel/`
+푸시하고 1~2분 뒤 `https://mingyu221.github.io/office/video/codh-tunnel/`
 에서 열린다. 브라우저 캐시가 남으면 강력 새로고침(맥 `Cmd+Shift+R`).
 
 ### 인자 설명
@@ -104,7 +108,7 @@ docs/
 
 ```
 ?model=다른.glb&usdz=다른.usdz
-?model=https://raw.githubusercontent.com/mingyu221/office_claude/main/경로/x.glb
+?model=https://raw.githubusercontent.com/mingyu221/office/main/경로/x.glb
 ?title=제목&note=설명
 ```
 
