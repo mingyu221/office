@@ -14,22 +14,33 @@ import bpy
 
 # ---------------------------- 설정 -------------------------------------------
 PATTERNS = ("O2_Trajectory_F",)
-HEX      = "8B0000"   # 진한 붉은색. 아래 참고표에서 골라 바꾸세요
 DRY_RUN  = True       # True = 보기만 함. 확인 후 False 로 바꿔 실행
 
-# 이 머티리얼은 이름이 O2_Red_Emission 인 발광 머티리얼이다.
-# 발광이 켜져 있으면 Base Color 가 아니라 Emission Color 가 보이는 색을 정한다.
-# 그래서 둘 다 바꾼다.
-EMISSION_STRENGTH   = None   # 숫자를 넣으면 발광 세기도 바꾼다 (None = 그대로)
+# ---- 시안 고르기 --------------------------------------------------------
+#  VARIANT 번호만 바꿔 Alt+P 를 누르고 뷰포트(Material Preview)를 보면 된다.
+#  발광 머티리얼이라 '색' 과 '발광 세기' 두 축을 같이 봐야 한다.
+#
+#    발광이 세면 선명한 빨강도 허옇게 날아가 분홍처럼 보인다.
+#    "더 진한 붉은색" 이 '어둡게' 가 아니라 '빨갛게 제대로' 라는 뜻이면
+#    색이 아니라 세기를 낮춰야 한다. 2~4번이 그 방향이다.
+VARIANT = 3
+# -------------------------------------------------------------------------
+VARIANTS = {
+    0: ("FF0D0D", None, "현재 계열 유지 (CPK 표준 산소색), 세기 그대로"),
+    1: ("FF0000", 3.0,  "선명한 빨강 + 강한 발광  (더 밝게)"),
+    2: ("FF0000", 1.5,  "선명한 빨강 + 중간 발광  (빨강이 살아남)"),
+    3: ("E00000", 1.0,  "진한 빨강 + 약한 발광    (추천 - 색이 또렷)"),
+    4: ("CC0000", 0.5,  "진한 빨강 + 아주 약한 발광"),
+    5: ("B00000", 0.0,  "진한 빨강, 발광 끔       (순수 디퓨즈)"),
+    6: ("8B0000", 1.0,  "진한 적갈색 + 약한 발광  (가장 어두움)"),
+}
+RESTORE = False   # True 로 두고 실행하면 처음 값으로 되돌린다
+# -------------------------------------------------------------------------
+
+if VARIANT not in VARIANTS:
+    raise ValueError(f"VARIANT 는 {sorted(VARIANTS)} 중 하나여야 합니다")
+HEX, EMISSION_STRENGTH, _DESC = VARIANTS[VARIANT]
 SET_EMISSION_ALWAYS = True   # 발광이 꺼져 있어도 Emission Color 를 맞춰 둔다
-# -----------------------------------------------------------------------------
-#  HEX 참고 (왼쪽일수록 밝음)
-#    FF0D0D  CPK 표준 산소색 (현재 보통 이 계열)
-#    CC0000  진한 빨강
-#    B22222  벽돌색 (firebrick)
-#    8B0000  진한 적갈색 (dark red)   <- 기본값
-#    6B0000  더 어두움
-# -----------------------------------------------------------------------------
 
 
 def srgb_to_linear(c):
@@ -64,9 +75,21 @@ o2_names = {o.name for o in objs}
 
 print("\n" + "=" * 88)
 print(f"Blender {bpy.app.version_string}")
-print(f"대상 {len(objs)}개  색 #{HEX.lstrip('#').upper()}"
-      f"  -> 선형 ({rgba[0]:.4f}, {rgba[1]:.4f}, {rgba[2]:.4f})")
+print(f"대상 {len(objs)}개")
+if RESTORE:
+    print("RESTORE = True  -> 처음 값으로 되돌립니다")
+else:
+    print(f"VARIANT {VARIANT}: {_DESC}")
+    print(f"  색 #{HEX.upper()}  -> 선형 ({rgba[0]:.4f}, {rgba[1]:.4f}, {rgba[2]:.4f})"
+          + (f"   발광 세기 {EMISSION_STRENGTH}"
+             if EMISSION_STRENGTH is not None else "   발광 세기 그대로"))
 print(f"DRY_RUN = {DRY_RUN}")
+print("-" * 88)
+print("다른 시안:")
+for k in sorted(VARIANTS):
+    h, st, d = VARIANTS[k]
+    mark = " <-- 지금" if k == VARIANT and not RESTORE else ""
+    print(f"  {k}: #{h}  세기 {str(st):>4}   {d}{mark}")
 print("=" * 88)
 if not objs:
     print(f"!! PATTERNS={PATTERNS} 에 맞는 메쉬가 없습니다.")
@@ -127,6 +150,37 @@ for o in objs:
         emis = node.inputs.get("Emission Color") or node.inputs.get("Emission")
         stren = node.inputs.get("Emission Strength")
         sv = stren.default_value if stren is not None else 0.0
+
+        # 처음 값을 머티리얼에 적어 둔다 (한 번만). RESTORE 로 되돌릴 수 있게.
+        if "_orig_base" not in mat.keys():
+            if not DRY_RUN:
+                if base is not None:
+                    mat["_orig_base"] = list(base.default_value)
+                if emis is not None:
+                    mat["_orig_emis"] = list(emis.default_value)
+                if stren is not None:
+                    mat["_orig_strength"] = float(sv)
+            print(f"     (처음 값 기록"
+                  + ("" if not DRY_RUN else " 예정") + " - RESTORE=True 로 복원 가능)")
+
+        if RESTORE:
+            if "_orig_base" not in mat.keys():
+                print(f"     !! 기록된 처음 값이 없습니다 - 건너뜀")
+                skipped.append(f"{o.name}[{i}] {mat.name}")
+                continue
+            print(f"     처음 값으로 복원: base={tuple(round(c,4) for c in mat['_orig_base'])}"
+                  f"  strength={mat.get('_orig_strength')}")
+            if not DRY_RUN:
+                if base is not None and "_orig_base" in mat.keys():
+                    base.default_value = tuple(mat["_orig_base"])
+                if emis is not None and "_orig_emis" in mat.keys():
+                    emis.default_value = tuple(mat["_orig_emis"])
+                if stren is not None and "_orig_strength" in mat.keys():
+                    stren.default_value = mat["_orig_strength"]
+                mat.diffuse_color = tuple(mat.get("_orig_base", (1, 0, 0, 1)))
+                changed += 1
+            done.add(mat.name)
+            continue
 
         print(f"  슬롯 {i}: '{mat.name}'")
         if base is not None:
