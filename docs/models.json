@@ -3,6 +3,10 @@
   "title": "3D Models",
   "items": [
     {
+      "path": "color",
+      "title": "color"
+    },
+    {
       "path": "video",
       "title": "video"
     }
